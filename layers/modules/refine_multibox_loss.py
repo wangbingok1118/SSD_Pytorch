@@ -81,7 +81,7 @@ class RefineMultiBoxLoss(nn.Module):
             arm_loc_data, arm_conf_data, loc_data, conf_data, priors = predictions
         else:
             loc_data, conf_data, _, _, priors = predictions
-        num = loc_data.size(0)
+        num = loc_data.size(0) # num == batch_size
         priors = priors[:loc_data.size(1), :]
         num_priors = (priors.size(0))
         num_classes = self.num_classes

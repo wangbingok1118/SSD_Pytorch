@@ -80,11 +80,12 @@ def up_layers(fpn_num):
 
 
 class FpnAdapter(nn.Module):
-    def __init__(self, block, fpn_num):
+    def __init__(self, block, fpn_num,up_num):
         super(FpnAdapter, self).__init__()
         self.trans_layers = nn.ModuleList(trans_layers(block, fpn_num))
         self.up_layers = nn.ModuleList(up_layers(fpn_num))
         self.latent_layers = nn.ModuleList(latent_layers(fpn_num))
+        self.up_num = up_num
         self._init_modules()
 
     def _init_modules(self):
@@ -100,13 +101,18 @@ class FpnAdapter(nn.Module):
             self.latent_layers[-1](trans_layers_list[-1]), inplace=True)
         # last layer
         fpn_out.append(last)
-        _up = self.up_layers[-1](last)
+        """
+        ????????????
+        """
         for i in range(len(trans_layers_list) - 2, -1, -1):
+            if self.up_num[i] == 1: # next layer need up
+                _up = self.up_layers[i](last)
+            else:
+                _up = last
             q = F.relu(trans_layers_list[i] + _up, inplace=True)
             q = F.relu(self.latent_layers[i](q), inplace=True)
             fpn_out.append(q)
-            if i > 0:
-                _up = self.up_layers[i - 1](q)
+            last = q
         fpn_out = fpn_out[::-1]
         return fpn_out
 

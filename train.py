@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "3,2,1,0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1,0"
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -28,7 +28,7 @@ def arg_parse():
     parser.add_argument(
         '--cfg',
         dest='cfg_file',
-        required=True,
+        # required=True,
         help='Config file for training (and optionally testing)')
     parser.add_argument(
         '--num_workers',
@@ -106,7 +106,7 @@ def train(train_loader, net, criterion, optimizer, epoch, epoch_step, gamma,
             odm_criterion = criterion[1]
             arm_loss_l, arm_loss_c = arm_criterion(output, targets)
             odm_loss_l, odm_loss_c = odm_criterion(
-                output, targets, use_arm=True, filter_object=True)
+                output, targets, use_arm=True, filter_object=True,debug=True)
             loss = arm_loss_l + arm_loss_c + odm_loss_l + odm_loss_c
         loss.backward()
         optimizer.step()
@@ -115,7 +115,7 @@ def train(train_loader, net, criterion, optimizer, epoch, epoch_step, gamma,
         all_time = ((end_epoch - epoch) * epoch_size +
                     (epoch_size - iteration)) * iteration_time
         eta = str(datetime.timedelta(seconds=int(all_time)))
-        if iteration % 10 == 0:
+        if iteration % 1 == 0:
             if not cfg.MODEL.REFINE:
                 print('Epoch:' + repr(epoch) + ' || epochiter: ' +
                       repr(iteration % epoch_size) + '/' + repr(epoch_size) +
@@ -139,6 +139,7 @@ def save_checkpoint(net, epoch, size, optimizer):
     save_name = os.path.join(
         args.save_folder,
         cfg.MODEL.TYPE + "_epoch_{}_{}".format(str(epoch), str(size)) + '.pth')
+    time.sleep(10)
     torch.save({
         'epoch': epoch,
         'size': size,
@@ -166,6 +167,8 @@ def eval_net(val_dataset,
     all_boxes = [[[] for _ in range(num_images)] for _ in range(num_classes)]
     det_file = os.path.join(eval_save_folder, 'detections.pkl')
     st = time.time()
+    print('*'*100)
+    print(st)
     for idx, (imgs, _, img_info) in enumerate(val_loader):
         with torch.no_grad():
             t1 = time.time()
@@ -216,6 +219,7 @@ def eval_net(val_dataset,
 def main():
     global args
     args = arg_parse()
+    ssh_run_param(args)
     cfg_from_file(args.cfg_file)
     save_folder = args.save_folder
     batch_size = cfg.TRAIN.BATCH_SIZE
@@ -301,6 +305,7 @@ def main():
         train_dataset = trainvalDataset(dataroot, trainSet, TrainTransform,
                                         dataset_name)
         epoch_size = len(train_dataset)
+
         train_loader = data.DataLoader(
             train_dataset,
             batch_size,
@@ -324,6 +329,10 @@ def main():
                 batch_size=batch_size)
     save_checkpoint(net, end_epoch, size, optimizer)
 
+
+
+def ssh_run_param(args):
+    args.cfg_file = './configs/refine_detnet59_voc.yaml'
 
 if __name__ == '__main__':
     main()
