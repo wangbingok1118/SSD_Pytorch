@@ -82,15 +82,15 @@ class RefineMultiBoxLoss(nn.Module):
         else:
             loc_data, conf_data, _, _, priors = predictions
         num = loc_data.size(0) # num == batch_size
-        priors = priors[:loc_data.size(1), :]
-        num_priors = (priors.size(0))
+        priors = priors[:loc_data.size(1), :] # ssd input have same priors ,so the priors Just for one image
+        num_priors = (priors.size(0)) # the number of priors
         num_classes = self.num_classes
 
         # match priors (default boxes) and ground truth boxes
-        loc_t = torch.Tensor(num, num_priors, 4)
+        loc_t = torch.Tensor(num, num_priors, 4) # num == batch_size ,num_priors == one image priors number
         conf_t = torch.LongTensor(num, num_priors)
         defaults = priors.data
-        for idx in range(num):
+        for idx in range(num): # target : 4 bbox data , 1 label data
             truths = targets[idx][:, :-1].data
             labels = targets[idx][:, -1].data
             if self.num_classes == 2:

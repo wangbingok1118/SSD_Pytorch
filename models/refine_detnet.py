@@ -183,6 +183,7 @@ class BottleneckB(nn.Module):
 class DetNet(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000):
+
         self.inplanes = 64
         super(DetNet, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
@@ -196,7 +197,7 @@ class DetNet(nn.Module):
         self.layer4 = self._make_new_layer(256, layers[3])
         self.layer5 = self._make_new_layer(256, layers[4])
         self.extras = nn.ModuleList(add_extras())
-        self.fpn = FpnAdapter([256,512, 1024, 1024, 1024,512], 6,[1,1,0,0,1,0])
+        self.fpn = FpnAdapter([512, 1024, 1024,512], 4,[1,0,1,0])
         # self.avgpool = nn.AdaptiveAvgPool2d(1)
         # self.fc = nn.Linear(1024, num_classes)
 
@@ -253,9 +254,9 @@ class DetNet(nn.Module):
         c6 = self.layer5(c5) # 16*
 
         arm_sources = []
-        arm_sources.append(c2)
+        #arm_sources.append(c2)
         arm_sources.append(c3)
-        arm_sources.append(c4)
+        #arm_sources.append(c4)
         arm_sources.append(c5)
         arm_sources.append(c6)
         x = c6
@@ -310,15 +311,40 @@ def refine_detnet(size, channel_size='48'):
     return detnet59(size)
 
 
+
+"""
+#-*-coding:utf-8-*-
+import torch
+import torchvision
+from torch.autograd import Variable
+from tensorboardX import SummaryWriter
+
+# 模拟输入数据
+input_data = Variable(torch.rand(16, 3, 224, 224))
+
+# 从torchvision中导入已有模型
+net = torchvision.models.resnet18()
+
+# 声明writer对象，保存的文件夹，异己名称
+writer = SummaryWriter(log_dir=\'./log\', comment=\'resnet18\')
+with writer:
+    writer.add_graph(net, (input_data,))
+"""
+
 if __name__ == '__main__':
     import os
 
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    from tensorboardX import SummaryWriter
     model = detnet59(size=512)
     print(model)
+    writer = SummaryWriter(log_dir='./log', comment='detnet_59')
     with torch.no_grad():
         model.eval()
         x = torch.randn(1, 3, 512, 512)
         model.cuda()
-        arm_sources, odm_sources = model(x.cuda())
-        print(arm_sources)
+        with writer:
+            arm_sources, odm_sources = model(x.cuda())
+            print(arm_sources)
+            writer.add_graph(model, x.cuda())
+

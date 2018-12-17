@@ -125,7 +125,7 @@ class VGG16Extractor(nn.Module):
         # self.trans_layers = nn.ModuleList(trans_layers(str(size)))
         # self.latent_layers = nn.ModuleList(latent_layers((str(size))))
         # self.up_layers = nn.ModuleList(up_layers(str(size)))
-        self.fpn = FpnAdapter([512, 1024, 256, 256], 4)
+        self.fpn = FpnAdapter([512, 1024, 256, 256], 4,[1,1,1,1])
         self._init_modules()
 
     def _init_modules(self):

@@ -102,7 +102,7 @@ class FpnAdapter(nn.Module):
         # last layer
         fpn_out.append(last)
         """
-        ????????????
+        add upsample args 
         """
         for i in range(len(trans_layers_list) - 2, -1, -1):
             if self.up_num[i] == 1: # next layer need up

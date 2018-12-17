@@ -42,7 +42,6 @@ def arg_parse():
     parser.add_argument(
         '--cfg',
         dest='cfg_file',
-        required=True,
         help='Config file for training (and optionally testing)')
     parser.add_argument(
         '--save_folder',
@@ -111,6 +110,7 @@ def im_detect(img, net, detector, transform, thresh=0.01):
 def main():
     global args
     args = arg_parse()
+    ssh_run_param(args)
     cfg_from_file(args.cfg_file)
     bgr_means = cfg.TRAIN.BGR_MEAN
     dataset_name = cfg.DATASETS.DATA_TYPE
@@ -160,6 +160,10 @@ def main():
         out_img_name = "output_" + item
         save_path = os.path.join(save_folder, out_img_name)
         cv2.imwrite(save_path, img)
+
+
+def ssh_run_param(args):
+    args.cfg_file = './configs/refine_vgg_voc_512.yaml'
 
 
 if __name__ == '__main__':

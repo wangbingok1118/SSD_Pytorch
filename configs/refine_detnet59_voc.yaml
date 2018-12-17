@@ -10,7 +10,7 @@ MODEL:
 TRAIN:
   OVERLAP: 0.5
   BGR_MEAN: [104, 117, 123]
-  BATCH_SIZE: 20
+  BATCH_SIZE: 24
   OHEM: True
   NEG_RATIO: 3
   WARMUP: True
@@ -34,14 +34,14 @@ SMALL:
   USE_MAX_SIZE: False
 
 BIG:
-  FEATURE_MAPS: [[128,128],[64, 64], [32, 32],[32,32],[32,32],[16, 16]]
-  ARM_CHANNELS: [256,512, 1024,1024,1024, 512]
-  ODM_CHANNELS: [256, 256, 256, 256,256,256]
-  NUM_ANCHORS: [3, 3, 3, 3,3,3]
-  STEPS: [[4,4],[8, 8], [16, 16], [16, 16], [16, 16], [32, 32]]
-  MIN_SIZES: [24,30, 64,64,64 ,128]
-  MAX_SIZES: [30,64,64,128, 256,315]
-  ASPECT_RATIOS : [[2, 0.5], [2, 0.5], [2, 0.5], [2, 0.5],[2,0.5],[2,0.5]]
+  FEATURE_MAPS: [[64, 64],[32,32],[32,32],[16, 16]]
+  ARM_CHANNELS: [512,1024,1024, 512]
+  ODM_CHANNELS: [ 256,  256,256,256]
+  NUM_ANCHORS: [3, 3,3,3]
+  STEPS: [[8, 8], [16, 16], [16, 16], [32, 32]]
+  MIN_SIZES: [30, 64,64 ,128]
+  MAX_SIZES: [64,128, 256,315]
+  ASPECT_RATIOS : [[2, 0.5], [2, 0.5],[2,0.5],[2,0.5]]
   CLIP: True
   IMG_WH: [512, 512]
   INPUT_FIXED: True # if you want to input different size, you need to set this False.
@@ -52,8 +52,8 @@ SOLVER:
   BASE_LR: 0.002
   GAMMA: 0.1
   MOMENTUM: 0.9
-  EPOCH_STEPS: [0, 150, 200]
-  END_EPOCH: 500
+  EPOCH_STEPS: [0, 150, 200,300]
+  END_EPOCH: 400
   START_EPOCH: 0
 
 DATASETS:

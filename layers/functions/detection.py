@@ -41,10 +41,10 @@ class Detect(Function):
         if self.cfg.MODEL.REFINE:
             arm_loc, arm_conf, loc, conf, priors = predictions
             arm_conf = F.softmax(arm_conf.view(-1, 2), 1)
-            conf = F.softmax(conf.view(-1, self.num_classes), 1)
+            conf = F.softmax(conf.view(-1, self.num_classes), 1) # conf : odm shape : n,num_class
             arm_loc_data = arm_loc.data
             arm_conf_data = arm_conf.data
-            arm_object_conf = arm_conf_data[:, 1:]
+            arm_object_conf = arm_conf_data[:, 1:] # arm_conf_data shape : n , 2
             no_object_index = arm_object_conf <= self.object_score
             conf.data[no_object_index.expand_as(conf.data)] = 0
         else:

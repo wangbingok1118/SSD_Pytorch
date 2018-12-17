@@ -106,7 +106,7 @@ def train(train_loader, net, criterion, optimizer, epoch, epoch_step, gamma,
             odm_criterion = criterion[1]
             arm_loss_l, arm_loss_c = arm_criterion(output, targets)
             odm_loss_l, odm_loss_c = odm_criterion(
-                output, targets, use_arm=True, filter_object=True,debug=True)
+                output, targets, use_arm=True, filter_object=True,debug=False)
             loss = arm_loss_l + arm_loss_c + odm_loss_l + odm_loss_c
         loss.backward()
         optimizer.step()
@@ -115,7 +115,7 @@ def train(train_loader, net, criterion, optimizer, epoch, epoch_step, gamma,
         all_time = ((end_epoch - epoch) * epoch_size +
                     (epoch_size - iteration)) * iteration_time
         eta = str(datetime.timedelta(seconds=int(all_time)))
-        if iteration % 1 == 0:
+        if iteration % 20 == 0:
             if not cfg.MODEL.REFINE:
                 print('Epoch:' + repr(epoch) + ' || epochiter: ' +
                       repr(iteration % epoch_size) + '/' + repr(epoch_size) +
@@ -140,14 +140,16 @@ def save_checkpoint(net, epoch, size, optimizer):
         args.save_folder,
         cfg.MODEL.TYPE + "_epoch_{}_{}".format(str(epoch), str(size)) + '.pth')
     time.sleep(10)
-    torch.save({
-        'epoch': epoch,
-        'size': size,
-        'batch_size': cfg.TRAIN.BATCH_SIZE,
-        'model': net.state_dict(),
-        'optimizer': optimizer.state_dict()
-    }, save_name)
-
+    try:
+        torch.save({
+            'epoch': epoch,
+            'size': size,
+            'batch_size': cfg.TRAIN.BATCH_SIZE,
+            'model': net.state_dict(),
+            'optimizer': optimizer.state_dict()
+        }, save_name)
+    except:
+        print("save model error :",save_name)
 
 def eval_net(val_dataset,
              val_loader,
@@ -314,7 +316,7 @@ def main():
             collate_fn=detection_collate)
         train(train_loader, net, criterion, optimizer, epoch, epoch_step,
               gamma, end_epoch, cfg)
-        if (epoch % 10 == 0) or (epoch % 5 == 0 and epoch >= 200):
+        if (epoch % 20 == 0) or (epoch % 10 == 0 and epoch >= 200):
             save_checkpoint(net, epoch, size, optimizer)
         if (epoch >= 50 and epoch % 10 == 0):
             eval_net(
