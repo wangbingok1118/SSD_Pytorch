@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "1,0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -60,13 +60,14 @@ def adjust_learning_rate(optimizer, epoch, step_epoch, gamma, epoch_size,
     """
     ## warmup
     if epoch <= cfg.TRAIN.WARMUP_EPOCH:
-        if cfg.TRAIN.WARMUP:
+        if cfg.TRAIN.WARMUP:# lr linear increase
             iteration += (epoch_size * (epoch - 1))
             lr = 1e-6 + (cfg.SOLVER.BASE_LR - 1e-6) * iteration / (
                 epoch_size * cfg.TRAIN.WARMUP_EPOCH)
         else:
             lr = cfg.SOLVER.BASE_LR
-    else:
+    else: # lr change by set step_epoch like [0,100,150] ,epoch in (0,100] ,lr = lr * (gamma **0) = lr
+          # epoch in (100,150] ,lr = lr * (gamma ** 1) = lr * gamma
         div = 0
         if epoch > step_epoch[-1]:
             div = len(step_epoch) - 1
@@ -306,7 +307,7 @@ def main():
     for epoch in range(start_epoch + 1, end_epoch + 1):
         train_dataset = trainvalDataset(dataroot, trainSet, TrainTransform,
                                         dataset_name)
-        epoch_size = len(train_dataset)
+        epoch_size = len(train_dataset) # epoch_size is error
 
         train_loader = data.DataLoader(
             train_dataset,
@@ -314,6 +315,7 @@ def main():
             shuffle=True,
             num_workers=args.num_workers,
             collate_fn=detection_collate)
+        epoch_iter_size = len(train_loader) # epoch_iter_size * batch_size >= trainval image length
         train(train_loader, net, criterion, optimizer, epoch, epoch_step,
               gamma, end_epoch, cfg)
         if (epoch % 20 == 0) or (epoch % 10 == 0 and epoch >= 200):
@@ -334,7 +336,7 @@ def main():
 
 
 def ssh_run_param(args):
-    args.cfg_file = './configs/refine_detnet59_voc.yaml'
+    args.cfg_file = './configs/refine_vgg_voc.yaml'
 
 if __name__ == '__main__':
     main()

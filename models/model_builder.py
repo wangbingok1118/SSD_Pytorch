@@ -61,7 +61,7 @@ class SSD(nn.Module):
             print("load pretrain model {}".format(
                 self.cfg.MODEL.PRETRAIN_WEIGHTS))
             if self.cfg.MODEL.TYPE.split('_')[-1] == 'vgg':
-                self.extractor.vgg.load_state_dict(weights)
+                self.extractor.vgg.load_state_dict(weights,strict=False)
             else:
                 self.extractor.load_state_dict(weights, strict=False)
 
